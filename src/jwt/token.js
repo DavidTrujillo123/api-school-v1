@@ -13,7 +13,7 @@ function generateToken(obj) {
   const serialized = serialize('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none',
     maxAge: 60 * 60 * 24 * 30, // 30 days in seconds,
     
   });
@@ -21,7 +21,7 @@ function generateToken(obj) {
   return serialized;
 }
 
-const verificationToken = async (req, res, next) => {
+const tokenRequiered = async (req, res, next) => {
   const accesToken = req.cookies.token;
 
   if (!accesToken) {
@@ -43,7 +43,28 @@ const verificationToken = async (req, res, next) => {
   })
 };
 
+const verificationToken = async (req, res) => {
+  console.log(req);
+  try {
+    const accesToken = req.cookies.token;
+
+    jwt.verify(accesToken, "secret");
+
+    return res.status(200).json({
+      success: true
+    });
+  } catch (error) {
+    res.status(401).json({
+      response: "Invalid Token",
+      success: false,
+    });
+  }
+
+  
+}
+
 module.exports = {
   generateToken,
+  tokenRequiered,
   verificationToken,
 }

@@ -3,23 +3,6 @@ const {generateToken} = require('../jwt/token');
 const { db } = require("../../config/connection");
 
 //----------------LOGIN
-
-const teacherVerificacionToken = async (req, res) => {
-  try {
-    const accesToken = req.cookies.token;
-
-    verify(accesToken, "secret")
-    
-    res.status(200).json({success: true})
-  } catch (error) {
-    res.status(401).json({
-      response: "Error en el token",
-      success: false,
-    });
-  }
-  
-}
-
 const teacherReadCookie = async (req, res) => {
   try {
     const tokenFromCookie = req.cookies.token; 
@@ -31,35 +14,6 @@ const teacherReadCookie = async (req, res) => {
   }
 }
 
-const teacherLogin = async (req, res) => {
-  const { te_email, te_password } = req.body;
-  try {
-    const idTeacher = await db.one(`
-      SELECT te_id 
-      FROM teacher
-      WHERE te_email like '${te_email}'
-    `);
-
-    const teacher = await db.one(`
-      SELECT te_id, te_name, te_surname, te_email 
-      FROM teacher
-      WHERE te_id = ${idTeacher.te_id}
-      AND te_password like '${te_password}';
-    `);
-
-    const response = generateToken(teacher);
-
-    res.setHeader("Set-cookie", response);
-    res.status(200).json({
-      success: true,
-    });
-  } catch (error) {
-    res.status(401).json({
-      response: "Error en el usuario o contraseña",
-      success: false,
-    });
-  }
-};
 //----------------SELECT
 const teacherStudents = async (req, res) => {
   const { te_id } = req.params;
@@ -274,7 +228,6 @@ const teacherDelete = async (req, res) => {
 };
 
 module.exports = {
-  teacherLogin,
   teacherCreate,
   teacherUpdate,
   teacherCourses,
@@ -283,5 +236,4 @@ module.exports = {
   teacherStudentsCourses,
   teacherDelete,
   teacherReadCookie,
-  teacherVerificacionToken,
 };
