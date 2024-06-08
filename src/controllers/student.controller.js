@@ -38,16 +38,16 @@ const studentReadById = async (req, res) => {
 };
 
 const studentCreate = async (req, res) => {
-  const { te_id, st_name, st_surname, co_id} = req.body;
+  const {st_name, st_surname, co_id} = req.body;
 
   try {
     const response = await db.one(`
       INSERT INTO public.student(
-        te_id, st_name, st_surname, st_status, created_at)
+        st_name, st_surname, st_status, created_at)
       VALUES 
-        ($1, $2, $3, TRUE, NOW())
+        ($1, $2,TRUE, NOW())
       RETURNING st_id, st_name, st_surname;
-    `, [te_id, st_name, st_surname]);
+    `, [st_name, st_surname]);
 
     if(co_id != undefined || co_id != null) {
       await db.none(`
@@ -58,10 +58,11 @@ const studentCreate = async (req, res) => {
       `, [co_id, response.st_id]);
     }
 
-    res.json(response);
+    res.json({success: true, response});
   } catch (error) {
     res.json({
-      message: "Error al crear el estudiante",
+      success: false,
+      response: "Error al crear el estudiante",
       error: {
         error_code: '404',
         details: error.message,

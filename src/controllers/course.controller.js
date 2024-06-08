@@ -73,9 +73,10 @@ const courseCreate = async (req, res) => {
       RETURNING co_name, co_status, created_at;
     `);
 
-    res.json(response);
+    res.json({success: true, message: response});
   } catch (error) {
     res.json({
+      success: false,
       message: "Error al crear el curso",
       error: {
         error_code: '404',

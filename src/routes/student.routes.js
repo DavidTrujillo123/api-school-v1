@@ -1,5 +1,7 @@
 const {Router} = require('express');
 
+const {tokenRequiered} = require('../jwt/token');
+
 const {
   studentReadById,
   studentCreate,
@@ -10,7 +12,7 @@ const {
 const router = Router();
 
 router.get('/student/read/:st_id', studentReadById);
-router.post('/student/create', studentCreate);
+router.post('/student/create', tokenRequiered, studentCreate);
 router.put('/student/update', studentUpdate);
 router.delete('/student/delete/:st_id', studentDelete);
 

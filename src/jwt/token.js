@@ -24,7 +24,7 @@ function generateToken(obj) {
 const tokenRequiered = async (req, res, next) => {
   try {
     const accesToken = req.cookies.token;
-    
+     
     if (!accesToken) {
       res.status(401).json({
         success: false, 
@@ -52,7 +52,6 @@ const tokenRequiered = async (req, res, next) => {
 };
 
 const verificationToken = async (req, res) => {
-  console.log(req);
   try {
     const accesToken = req.cookies.token;
 

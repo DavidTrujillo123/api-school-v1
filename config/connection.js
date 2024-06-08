@@ -2,7 +2,7 @@ const pgPromise = require ('pg-promise');
 const config = {
     host: 'localhost',
     port: '5432',
-    database: 'simple_school-v2',
+    database: 'simple-school-v3',
     user: 'postgres',
     password: '200113'
 };
