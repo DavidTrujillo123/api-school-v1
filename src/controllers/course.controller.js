@@ -10,7 +10,7 @@ const courseReadById = async (req, res) => {
     `);
 
     const students = await db.any(`
-      SELECT s.st_id, s.st_name,s.st_surname, s.st_status
+      SELECT s.st_id, s.st_name,s.st_surname, s.st_status, created_at
       FROM student s, course_student cs
       WHERE cs.co_id = ${co_id}
       AND cs.st_id = s.st_id;

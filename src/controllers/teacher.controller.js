@@ -144,13 +144,10 @@ const teacherCoursesStudents = async (req, res) => {
 
 //----------------CREATE TEACHER ----------------
 const teacherCreate = async (req, res) => {
-  const te_name = req.body.te_name;
-  const te_surname = req.body.te_surname;
-  const te_email = req.body.te_email;
-  const te_password = req.body.te_password;
+  const {te_name, te_surname, te_email, te_password} = req.body;
 
   try {
-    const response = await db.one(`
+    const newTeacher = await db.one(`
       INSERT INTO teacher (
         te_name, te_surname, 
         te_email, te_password, 
@@ -158,14 +155,21 @@ const teacherCreate = async (req, res) => {
       VALUES (
         '${te_name}', '${te_surname}',
         '${te_email}','${te_password}', 
-        1, NOW() )
+        true, NOW() )
       RETURNING te_name, te_surname, te_email;
     `);
 
-    res.json(response);
+    res.status(200).json({
+      success: true,
+    });
+
+    //TODO: GENERATE JWT
+    // const response = generateToken(newTeacher);
+    // res.setHeader("Set-cookie", response);
   } catch (error) {
     res.json({
-      message: "Error al crear el usuario",
+      success: false,
+      response: "Error al crear el usuario",
       error: {
         error_code: "404",
       },

@@ -22,25 +22,33 @@ function generateToken(obj) {
 }
 
 const tokenRequiered = async (req, res, next) => {
-  const accesToken = req.cookies.token;
-
-  if (!accesToken) {
-    res.status(401).json({
+  try {
+    const accesToken = req.cookies.token;
+    
+    if (!accesToken) {
+      res.status(401).json({
+        success: false, 
+        message: "Access denied"
+      });
+    }
+  
+    jwt.verify(accesToken, "secret", (err) =>{
+      if (err) {
+        res.status(404).json({
+          success: false, 
+          message: "Access denied, token is invalid or expired"
+        });
+      } else {
+        next();
+      }
+    })
+  } catch (error) {
+    res.status(404).json({
       success: false, 
-      message: "Access denied"
+      message: "Something went wrong"
     });
   }
 
-  jwt.verify(accesToken, "secret", (err) =>{
-    if (err) {
-      res.status(404).json({
-        success: false, 
-        message: "Access denied, token is invalid or expired"
-      });
-    } else {
-      next();
-    }
-  })
 };
 
 const verificationToken = async (req, res) => {
