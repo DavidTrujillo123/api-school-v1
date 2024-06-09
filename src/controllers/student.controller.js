@@ -30,7 +30,7 @@ const studentReadById = async (req, res) => {
     res.json({
       message: "Error al leer el estudiante",
       error: {
-        error_code: '404',
+        error_code: "404",
         details: error.message,
       },
     });
@@ -38,33 +38,39 @@ const studentReadById = async (req, res) => {
 };
 
 const studentCreate = async (req, res) => {
-  const {st_name, st_surname, co_id} = req.body;
+  const { st_name, st_surname, co_id } = req.body;
 
   try {
-    const response = await db.one(`
+    const response = await db.one(
+      `
       INSERT INTO public.student(
         st_name, st_surname, st_status, created_at)
       VALUES 
         ($1, $2,TRUE, NOW())
       RETURNING st_id, st_name, st_surname;
-    `, [st_name, st_surname]);
+    `,
+      [st_name, st_surname]
+    );
 
-    if(co_id != undefined || co_id != null) {
-      await db.none(`
+    if (co_id != undefined || co_id != null) {
+      await db.none(
+        `
         INSERT INTO public.course_student(
           co_id, st_id)
         VALUES 
           ($1, $2)
-      `, [co_id, response.st_id]);
+      `,
+        [co_id, response.st_id]
+      );
     }
 
-    res.json({success: true, response});
+    res.json({ success: true, response });
   } catch (error) {
     res.json({
       success: false,
       response: "Error al crear el estudiante",
       error: {
-        error_code: '404',
+        error_code: "404",
         details: error.message,
       },
     });
@@ -72,23 +78,26 @@ const studentCreate = async (req, res) => {
 };
 
 const studentUpdate = async (req, res) => {
-  const { st_id, st_name, st_surname } = req.body;
+  const { st_id, st_name, st_surname, st_status } = req.body;
 
   try {
-    const response = await db.one(`
+    const response = await db.one(
+      `
       UPDATE student
       SET 
-        st_name = $1, 
-        st_surname = $2 
-      WHERE st_id = $3
+        st_name = $2, 
+        st_surname = $3,
+        st_status = $4
+      WHERE st_id = $1
       RETURNING st_id, st_name, st_surname;
-    `, [st_name, st_surname, st_id]);
+    `,
+      [st_id, st_name, st_surname, st_status]
+    );
 
-    //TODO: Change course 
+    //TODO: Change course
     //Add req.body co_id, co_id_old like this
-    // const { st_id, st_name, 
+    // const { st_id, st_name,
     //   st_surname, co_id, co_id_old } = req.body;
-
 
     // if(co_id != undefined || co_id != null) {
     //   await db.none(`
@@ -99,19 +108,20 @@ const studentUpdate = async (req, res) => {
     //   `);
     // }
 
-    res.json(response);
+    res.status(200).json({ success: true, response });
   } catch (error) {
-    res.json({
+    res.status(404).json({
+      success: false,
       message: "Error al actualizar el estudiante",
       error: {
-        error_code: '404',
+        error_code: "404",
         details: error.message,
       },
     });
   }
 };
 
-const studentDelete = async (req, res) => {
+const studentChangeState = async (req, res) => {
   const { st_id } = req.params;
 
   try {
@@ -130,7 +140,37 @@ const studentDelete = async (req, res) => {
     res.json({
       message: "Error al eliminar el estudiante",
       error: {
-        error_code: '404',
+        error_code: "404",
+        details: error.message,
+      },
+    });
+  }
+};
+
+const studentDelete = async (req, res) => {
+  const { st_id } = req.params;
+
+  try {
+    await db.none(`
+      DELETE FROM public.attendance_student
+      WHERE st_id = ${st_id};
+
+      DELETE FROM public.course_student
+      WHERE st_id = ${st_id};
+
+      DELETE FROM student WHERE st_id = ${st_id};
+    `);
+
+    res.status(200).json({
+      success: true,
+      message: "Estudiante eliminado exitosamente",
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: "Error al eliminar el estudiante",
+      error: {
+        error_code: "404",
         details: error.message,
       },
     });
@@ -141,5 +181,6 @@ module.exports = {
   studentReadById,
   studentCreate,
   studentUpdate,
+  studentChangeState,
   studentDelete,
-}
+};

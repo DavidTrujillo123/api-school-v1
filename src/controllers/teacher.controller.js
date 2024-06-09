@@ -42,10 +42,12 @@ const teacherStudents = async (req, res) => {
 const teacherStudentsCourses = async (req, res) => {
   const { te_id } = req.params;
   try {
+    //TODO FIX: NO EXITS te_id in table student
     const students = await db.any(`
       SELECT st_id, st_name, st_surname, st_status
       FROM student
-      WHERE te_id = ${te_id};
+      WHERE te_id = ${te_id}
+      ORDER BY st_status;
     `);
 
     const studentsWithCourses = [];
@@ -118,7 +120,8 @@ const teacherCoursesStudents = async (req, res) => {
         SELECT s.st_id, s.st_name, s.st_status
         FROM student s, course_student cs
         WHERE cs.co_id = ${course.co_id}
-        AND cs.st_id = s.st_id;
+        AND cs.st_id = s.st_id
+        ORDER BY s.st_status;
       `);
 
       coursesWithStudents.push({
