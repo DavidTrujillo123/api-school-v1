@@ -1,5 +1,29 @@
 const { db } = require("../../config/connection");
 
+const attendanceRead = async (req, res) => {
+  const { co_id } = req.params;
+  try {
+    const response = await db.any(`
+      SELECT at.at_id, at.at_description, at_date 
+      FROM course c
+      INNER JOIN attendance at ON c.co_id = at.co_id 
+      WHERE c.co_id = ${co_id}
+      ORDER BY at.at_date DESC
+    `);
+
+    res.status(200).json({success:true, response});
+  } catch (error) {
+    res.json({
+      success:false,
+      message: "Error al leer asistencias",
+      error: {
+        error_code: "404",
+        details: error.message,
+      },
+    });
+  }
+};
+
 const attendanceReadDates = async (req, res) => {
   const { co_id } = req.params;
 
@@ -14,12 +38,12 @@ const attendanceReadDates = async (req, res) => {
       ORDER BY year;
       `,[co_id]
     );
-    
+
     const response = [];
-    
+
     for (const year of years) {
       const monthsDays = [];
-      
+
       const months = await db.any(`
         SELECT DISTINCT
           EXTRACT(MONTH FROM a.at_date) AS month
@@ -27,10 +51,10 @@ const attendanceReadDates = async (req, res) => {
             attendance a
         WHERE
             a.co_id = $1
-        AND 
+        AND
           EXTRACT(YEAR FROM a.at_date) = $2
         ORDER BY month;
-      `, [co_id, year.year]); 
+      `, [co_id, year.year]);
 
       for (const month of months) {
         const days = await db.any(`
@@ -41,13 +65,13 @@ const attendanceReadDates = async (req, res) => {
             attendance a
           WHERE
             a.co_id = $3
-          AND 
+          AND
             EXTRACT(YEAR FROM a.at_date) = $1
           AND
             EXTRACT(MONTH FROM a.at_date) = $2
           ORDER BY day;
         `, [year.year, month.month, co_id])
-      
+
         monthsDays.push({
           month:month.month ,
           days
@@ -55,14 +79,15 @@ const attendanceReadDates = async (req, res) => {
       }
 
       response.push({
-        year: year.year, 
+        year: year.year,
         months: monthsDays
       });
     };
     
-    res.json(response);
+    res.status(200).json({success:true, response});
   } catch (error) {
     res.json({
+      success:false,
       message: "Error al leer asistencias",
       error: {
         error_code: "404",
@@ -111,14 +136,15 @@ const attendanceCreate = async (req, res) => {
       INSERT INTO public.attendance(
         co_id, at_description, at_date)
       VALUES ($1, $2, NOW() )
-      RETURNING at_description, at_date;
+      RETURNING at_id, at_description, at_date;
     `,
       [co_id, at_description]
     );
 
-    res.json(response);
+    res.status(200).json({ success: true, response });
   } catch (error) {
     res.json({
+      success: false,
       message: "Error al crear asistencia",
       error: {
         error_code: "404",
@@ -164,17 +190,18 @@ const attendanceIsPresent = async (req, res) => {
     st_data.forEach(async (element) => {
       await db.none(
         `
-        INSERT INTO attendace_studet 
-          (at_id, st_id,at_st_isPresent)
+        INSERT INTO attendance_student 
+          (at_id, st_id, at_st_is_present)
         VALUES ($1, $2, $3);
       `,
         [at_id, element.st_id, element.at_st_isPresent]
       );
     });
 
-    res.json({ message: "Asistencia Registrada" });
+    res.json({ success: true, message: "Asistencia Registrada" });
   } catch (error) {
     res.json({
+      success: false,
       message: "Error al registrar asistencia",
       error: {
         error_code: "404",
@@ -190,4 +217,5 @@ module.exports = {
   attendanceIsPresent,
   attendanceReadStudents,
   attendanceReadDates,
+  attendanceRead
 };
