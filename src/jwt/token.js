@@ -23,15 +23,19 @@ function generateToken(obj) {
 
 const tokenRequiered = async (req, res, next) => {
   try {
-    const accesToken = req.cookies.token;
-     
+    let accesToken = req.cookies.token;
+
     if (!accesToken) {
       res.status(401).json({
         success: false, 
         message: "Access denied"
       });
     }
-  
+
+    if(accesToken.includes('token=')){
+      accesToken = accesToken.split(';')[0].split('=')[1];
+    }
+
     jwt.verify(accesToken, "secret", (err) =>{
       if (err) {
         res.status(404).json({

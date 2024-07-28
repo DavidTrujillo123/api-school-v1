@@ -37,6 +37,30 @@ const courseReadById = async (req, res) => {
   }
 };
 
+const courseAttendanceReadById = async (req, res) => {
+  const { co_id } = req.params;  
+  try {
+    const response = await db.any(`
+      SELECT at.at_id, at.at_description, at_date 
+      FROM course c
+      INNER JOIN attendance at ON c.co_id = at.co_id 
+      WHERE c.co_id = ${co_id}
+      ORDER BY at.at_date DESC
+    `);
+
+    res.status(200).json({success:true, response});
+  } catch (error) {
+    res.json({
+      success:false,
+      message: "Error al leer asistencias",
+      error: {
+        error_code: "404",
+        details: error.message,
+      },
+    });
+  }
+};
+
 const courseAddStudents = async (req, res) => {
   const { co_id, st_ids } = req.body;
 
@@ -150,4 +174,5 @@ module.exports = {
   courseUpdate,
   courseDelete,
   courseAddStudents,
+  courseAttendanceReadById
 };

@@ -7,12 +7,13 @@ const {
   courseUpdate,
   courseDelete,
   courseAddStudents,
-  courseReadById
+  courseReadById,
+  courseAttendanceReadById
 } = require('../controllers/course.controller');
 
 const router = Router();
 
-
+router.get('/course/attendances/read/:co_id', tokenRequiered, courseAttendanceReadById);
 router.get('/course/read/:co_id',tokenRequiered, courseReadById);
 router.post('/course/create',tokenRequiered, courseCreate);
 router.put('/course/update',tokenRequiered, courseUpdate);

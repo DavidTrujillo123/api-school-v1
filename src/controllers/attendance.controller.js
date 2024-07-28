@@ -1,16 +1,49 @@
 const { db } = require("../../config/connection");
 
-const attendanceRead = async (req, res) => {
-  const { co_id } = req.params;
+const attendanceStudentReadById = async (req, res) =>{
+  const { at_id } = req.params;  
   try {
-    const response = await db.any(`
-      SELECT at.at_id, at.at_description, at_date 
-      FROM course c
-      INNER JOIN attendance at ON c.co_id = at.co_id 
-      WHERE c.co_id = ${co_id}
-      ORDER BY at.at_date DESC
-    `);
+    const course = await db.one(`
+      SELECT c.co_id, c.co_name
+      FROM attendance a
+      INNER JOIN course c ON c.co_id = a.co_id
+      WHERE at_id = $1
+      `,[at_id]);
+    const isPresent = await db.any(`
+      SELECT 
+        a.at_id, 
+        a.at_date, 
+        s.st_id, 
+        s.st_name, 
+        s.st_surname
+      FROM attendance a
+      INNER JOIN attendance_student at on a.at_id = at.at_id
+      INNER JOIN student s on s.st_id = at.st_id
+      WHERE at.at_st_is_present = true
+      AND a.at_id = $1
+      ORDER BY s.st_surname
+    `, [at_id]);
 
+    const isNotPresent = await db.any(`
+      SELECT 
+        a.at_id, 
+        a.at_date, 
+        s.st_id, 
+        s.st_name, 
+        s.st_surname
+      FROM attendance a
+      INNER JOIN attendance_student at on a.at_id = at.at_id
+      INNER JOIN student s on s.st_id = at.st_id
+      WHERE at.at_st_is_present = false
+      AND a.at_id = $1
+      ORDER BY s.st_surname  
+    `,[at_id]);
+
+    const response = {
+      course,
+      isPresent,
+      isNotPresent,
+    };
     res.status(200).json({success:true, response});
   } catch (error) {
     res.json({
@@ -22,7 +55,7 @@ const attendanceRead = async (req, res) => {
       },
     });
   }
-};
+}
 
 const attendanceReadDates = async (req, res) => {
   const { co_id } = req.params;
@@ -88,36 +121,6 @@ const attendanceReadDates = async (req, res) => {
   } catch (error) {
     res.json({
       success:false,
-      message: "Error al leer asistencias",
-      error: {
-        error_code: "404",
-        details: error.message,
-      },
-    });
-  }
-};
-
-const attendanceReadStudents = async (req, res) => {
-  const { at_id } = req.params;
-
-  try {
-    const response = await db.any(`
-      SELECT 
-        a.at_date, 
-        a.at_description, 
-        c.co_name, st.st_name, 
-        st.st_surname, 
-        att."at_st_isPresent"
-      FROM attendance a
-        JOIN attendance_student att on att.at_id = a.at_id
-        JOIN student st on st.st_id = att.st_id
-        JOIN course c on c.co_id = a.co_id
-      WHERE a.at_id = ${at_id}
-    `);
-
-    res.json(response);
-  } catch (error) {
-    res.json({
       message: "Error al leer asistencias",
       error: {
         error_code: "404",
@@ -214,8 +217,7 @@ const attendanceIsPresent = async (req, res) => {
 module.exports = {
   attendanceCreate,
   attendanceUpdate,
-  attendanceIsPresent,
-  attendanceReadStudents,
+  attendanceIsPresent, 
   attendanceReadDates,
-  attendanceRead
+  attendanceStudentReadById
 };
