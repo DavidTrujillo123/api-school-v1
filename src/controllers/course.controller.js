@@ -127,7 +127,7 @@ const courseUpdate = async (req, res) => {
       [co_name, co_status, co_id]
     );
 
-    res.json(response);
+    res.status(201).json({ success: true, message: response });
   } catch (error) {
     res.json({
       message: "Error al actualizar el curso",
@@ -139,7 +139,7 @@ const courseUpdate = async (req, res) => {
   }
 };
 
-const courseDelete = async (req, res) => {
+const courseDeleteStage = async (req, res) => {
   const { co_id } = req.params;
 
   try {
@@ -154,6 +154,33 @@ const courseDelete = async (req, res) => {
     );
 
     res.json({
+      message: "Curso eliminado exitosamente",
+      course: response,
+    });
+  } catch (error) {
+    res.json({
+      message: "Error al actualizar el estado del curso",
+      error: {
+        error_code: "404",
+        details: error.message,
+      },
+    });
+  }
+};
+
+const courseDelete = async (req, res) => {
+  const { co_id } = req.params;
+
+  try {
+    const response = await db.oneOrNone(
+      `
+        DELETE FROM course WHERE co_id = $1 RETURNING *;
+      `,
+      [co_id]
+    );
+
+    res.json({
+      success: true,
       message: "Curso eliminado exitosamente",
       course: response,
     });

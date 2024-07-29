@@ -152,12 +152,6 @@ const studentDelete = async (req, res) => {
 
   try {
     await db.none(`
-      DELETE FROM public.attendance_student
-      WHERE st_id = ${st_id};
-
-      DELETE FROM public.course_student
-      WHERE st_id = ${st_id};
-
       DELETE FROM student WHERE st_id = ${st_id};
     `);
 
