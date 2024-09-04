@@ -6,16 +6,16 @@ const courseReadById = async (req, res) => {
     const course = await db.one(`
       SELECT co_id, co_name, co_status, created_at 
       FROM course
-      WHERE co_id = ${co_id};
-    `);
+      WHERE co_id = $1;
+    `, [co_id]);
 
     const students = await db.any(`
       SELECT s.st_id, s.st_name, s.st_surname, s.st_status, s.created_at
       FROM student s
       JOIN course_student cs ON cs.st_id = s.st_id
-      WHERE cs.co_id = ${co_id}
+      WHERE cs.co_id = $1
       ORDER BY s.st_status DESC, s.st_surname;
-    `);
+    `, [co_id]);
 
     const response = {
       co_id: course.co_id,
@@ -44,9 +44,9 @@ const courseAttendanceReadById = async (req, res) => {
       SELECT at.at_id, at.at_description, at_date 
       FROM course c
       INNER JOIN attendance at ON c.co_id = at.co_id 
-      WHERE c.co_id = ${co_id}
+      WHERE c.co_id = $1
       ORDER BY at.at_date DESC
-    `);
+    `, [co_id]);
 
     res.status(200).json({success:true, response});
   } catch (error) {
@@ -70,8 +70,8 @@ const courseAddStudents = async (req, res) => {
         INSERT INTO course_student (
           co_id, st_id)
         VALUES (
-          ${co_id}, ${element});
-      `);
+          $1, $2);
+      `, [co_id, element]);
     });
 
     res.json({ response: "Estudiantes ingresados correctamente" });
@@ -94,9 +94,9 @@ const courseCreate = async (req, res) => {
       INSERT INTO course (
         te_id, co_name, co_status, created_at)
       VALUES (
-        ${te_id}, '${co_name}', true, NOW())
+        $1, $2, true, NOW())
       RETURNING co_name, co_status, created_at;
-    `);
+    `, [te_id, co_name]);
 
     res.json({ success: true, message: response });
   } catch (error) {

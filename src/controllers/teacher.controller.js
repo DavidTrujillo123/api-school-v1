@@ -1,18 +1,18 @@
-const { verify } = require('jsonwebtoken');
-const {generateToken} = require('../jwt/token');
+const { verify } = require("jsonwebtoken");
+const { generateToken } = require("../jwt/token");
 const { db } = require("../../config/connection");
 
 //----------------LOGIN
 const teacherReadCookie = async (req, res) => {
   try {
-    const tokenFromCookie = req.cookies.token; 
+    const tokenFromCookie = req.cookies.token;
     const data = verify(tokenFromCookie, "secret");
-  
-    return res.json(data)
+
+    return res.json(data);
   } catch (error) {
-    return res.status(404).json({error: error.message});
+    return res.status(404).json({ error: error.message });
   }
-}
+};
 
 //----------------SELECT
 const teacherStudents = async (req, res) => {
@@ -23,11 +23,10 @@ const teacherStudents = async (req, res) => {
       SELECT s.st_id, s.st_name, s.st_surname, s.st_status
       FROM student s, teacher t
       WHERE t.te_id = s.te_id
-      AND t.te_id = ${te_id};
-    `);
- 
-    res.status(200).json(response);
+      AND t.te_id = $1;
+    `, [te_id]);
 
+    res.status(200).json(response);
   } catch (error) {
     res.status(404).json({
       message: "Error al leer el estudiante",
@@ -46,9 +45,9 @@ const teacherStudentsCourses = async (req, res) => {
     const students = await db.any(`
       SELECT st_id, st_name, st_surname, st_status
       FROM student
-      WHERE te_id = ${te_id}
+      WHERE te_id = $1
       ORDER BY st_status;
-    `);
+    `, [te_id]);
 
     const studentsWithCourses = [];
 
@@ -56,9 +55,9 @@ const teacherStudentsCourses = async (req, res) => {
       const courses = await db.any(`
         SELECT c.co_id, c.co_name, c.co_status
         FROM course c, course_student cs
-        WHERE cs.st_id = ${student.st_id}
+        WHERE cs.st_id = $1
         AND cs.co_id = c.co_id;
-      `);
+      `, [student.st_id]);
 
       studentsWithCourses.push({
         st_id: student.st_id,
@@ -87,10 +86,10 @@ const teacherCourses = async (req, res) => {
   try {
     const response = await db.any(`
       SELECT c.co_id, c.co_name, c.co_status, c.created_at
-      FROM course c, teacher t
-      WHERE t.te_id = c.te_id
-      AND t.te_id = ${te_id}; 
-    `);
+      FROM course c
+      JOIN teacher t ON t.te_id = c.te_id
+      WHERE t.te_id = $1;
+    `, [te_id]);
 
     res.json(response);
   } catch (error) {
@@ -110,8 +109,8 @@ const teacherCoursesStudents = async (req, res) => {
     const courses = await db.any(`
       SELECT co_id, co_name, co_status
       FROM course
-      WHERE te_id = ${te_id};
-    `);
+      WHERE te_id = $1;
+    `, [te_id]);
 
     const coursesWithStudents = [];
 
@@ -119,10 +118,10 @@ const teacherCoursesStudents = async (req, res) => {
       const student = await db.any(`
         SELECT s.st_id, s.st_name, s.st_status
         FROM student s, course_student cs
-        WHERE cs.co_id = ${course.co_id}
+        WHERE cs.co_id = $1
         AND cs.st_id = s.st_id
         ORDER BY s.st_status;
-      `);
+      `, [course.co_id]);
 
       coursesWithStudents.push({
         co_id: course.co_id,
@@ -147,7 +146,7 @@ const teacherCoursesStudents = async (req, res) => {
 
 //----------------CREATE TEACHER ----------------
 const teacherCreate = async (req, res) => {
-  const {te_name, te_surname, te_email, te_password} = req.body;
+  const { te_name, te_surname, te_email, te_password } = req.body;
 
   try {
     const newTeacher = await db.one(`
@@ -156,11 +155,9 @@ const teacherCreate = async (req, res) => {
         te_email, te_password, 
         te_status, created_at)
       VALUES (
-        '${te_name}', '${te_surname}',
-        '${te_email}','${te_password}', 
-        true, NOW() )
+        $1, $2, $3, crypt($4, gen_salt('bf')), true, NOW() )
       RETURNING te_name, te_surname, te_email;
-    `);
+    `, [te_email, te_surname, te_email, te_password]);
 
     res.status(200).json({
       success: true,

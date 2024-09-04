@@ -7,15 +7,15 @@ const studentReadById = async (req, res) => {
     const student = await db.one(`
       SELECT st_id, st_name, st_surname, st_status
       FROM student
-      WHERE st_id = ${st_id};
-    `);
+      WHERE st_id = $1;
+    `, [st_id]);
 
     const courses = await db.any(`
       SELECT c.co_id, c.co_name, c.co_status
       FROM course c, course_student cs
-      WHERE cs.st_id = ${st_id}
+      WHERE cs.st_id = $1
       AND cs.co_id = c.co_id;
-    `);
+    `, [st_id]);
 
     const response = {
       st_id: student.st_id,
@@ -79,7 +79,7 @@ const studentCreate = async (req, res) => {
 
 const studentUpdate = async (req, res) => {
   const { st_id, st_name, st_surname, st_status } = req.body;
-
+  
   try {
     const response = await db.one(
       `
@@ -129,9 +129,9 @@ const studentChangeState = async (req, res) => {
       UPDATE student
       SET 
         st_status = false, 
-      WHERE st_id = ${st_id};
+      WHERE st_id = $1;
       RETURNING st_id, st_name, st_surname;
-    `);
+    `, [st_id]);
 
     res.json({
       message: "Estudiante eliminado exitosamente",
@@ -152,8 +152,8 @@ const studentDelete = async (req, res) => {
 
   try {
     await db.none(`
-      DELETE FROM student WHERE st_id = ${st_id};
-    `);
+      DELETE FROM student WHERE st_id = $1;
+    `, [st_id]);
 
     res.status(200).json({
       success: true,

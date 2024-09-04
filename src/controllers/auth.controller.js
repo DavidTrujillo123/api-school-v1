@@ -44,11 +44,15 @@ const teacherLogin = async (req, res) => {
       WHERE te_email like '${te_email}'
     `);
 
+    if (!idTeacher){
+      throw new Error;
+    }
+
     const teacher = await db.one(`
       SELECT te_id, te_name, te_surname, te_email 
       FROM teacher
-      WHERE te_id = ${idTeacher.te_id}
-      AND te_password like '${te_password}';
+      WHERE te_email like '${te_email}'
+      AND te_password like crypt('${te_password}', te_password);
     `);
 
     const response = generateToken(teacher);
@@ -58,6 +62,8 @@ const teacherLogin = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.log(error);
+    
     res.status(401).json({
       response: "Error en el usuario o contraseña",
       success: false,
