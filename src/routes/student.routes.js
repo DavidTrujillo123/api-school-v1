@@ -12,8 +12,8 @@ const {
 const router = Router();
 
 router.get('/student/read/:st_id', studentReadById);
-router.post('/student/create', tokenRequiered, studentCreate);
-router.put('/student/update',tokenRequiered, studentUpdate);
-router.delete('/student/delete/:st_id',tokenRequiered, studentDelete);
+router.post('/student/create', studentCreate);
+router.put('/student/update', studentUpdate);
+router.delete('/student/delete/:st_id', studentDelete);
 
 module.exports = router;

@@ -15,8 +15,4 @@ const config = {
 const pgp = pgPromise({});
 const db = pgp(config);
 
-db.any("select * from teacher;").then((res) => {
-  console.log(res);
-});
-
 exports.db = db;

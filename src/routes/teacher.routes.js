@@ -17,11 +17,11 @@ const router = Router();
 router.get('/teacher/read', teacherReadCookie);
 router.post('/teacher/create', teacherCreate);
 //route, middleware, function
-router.get('/teacher/students/:te_id', tokenRequiered, teacherStudents);
-router.get('/teacher/students/courses/:te_id', tokenRequiered, teacherStudentsCourses);
-router.get('/teacher/courses/:te_id', tokenRequiered, teacherCourses);
+router.get('/teacher/students/:te_id', teacherStudents);
+router.get('/teacher/students/courses/:te_id', teacherStudentsCourses);
+router.get('/teacher/courses/:te_id', teacherCourses);
 router.get('/teacher/courses/students/:te_id', teacherCoursesStudents);
-router.put('/teacher/update', tokenRequiered, teacherUpdate);
-router.delete('/teacher/delete/:te_id', tokenRequiered, teacherDelete);
+router.put('/teacher/update', teacherUpdate);
+router.delete('/teacher/delete/:te_id', teacherDelete);
 
 module.exports = router;

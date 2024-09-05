@@ -37,6 +37,8 @@ const adminLogin = async (req, res) => {
 
 const teacherLogin = async (req, res) => {
   const { te_email, te_password } = req.body;
+  console.log(te_email);
+  
   try {
     const idTeacher = await db.one(`
       SELECT te_id 

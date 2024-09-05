@@ -20,5 +20,5 @@ app.get('/', (req, res)=> {res.send('Simple School API')});
 //ROUTES
 app.use(require('./routes/main.routes'));
 
-app.listen(3001);
+app.listen(3002);
 console.log('Server running in: '+process.env.URL_ORIGIN);
