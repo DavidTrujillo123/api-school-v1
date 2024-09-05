@@ -21,4 +21,4 @@ app.get('/', (req, res)=> {res.send('Simple School API')});
 app.use(require('./routes/main.routes'));
 
 app.listen(3001);
-console.log('Server running in: http://localhost:3001');
+console.log('Server running in: '+process.env.URL_ORIGIN);
