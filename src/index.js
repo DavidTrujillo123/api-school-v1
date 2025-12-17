@@ -60,8 +60,8 @@ try {
 
 const swaggerUi = require('swagger-ui-express');
 
-// Serve Swagger at root
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Serve Swagger at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Export app for Vercel
 module.exports = app;
