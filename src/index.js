@@ -26,28 +26,40 @@ app.use(cookieParser());
 app.use(require('./routes/main.routes'));
 
 // Swagger Configuration
-const swaggerJsdoc = require('swagger-jsdoc');
+// Swagger Configuration
+let swaggerSpec;
+
+try {
+  // Try to load static swagger.json (production/build)
+  swaggerSpec = require('./swagger.json');
+  console.log('Loaded static swagger.json');
+} catch (error) {
+  // Fallback to dynamic generation (development)
+  console.log('Generating Swagger spec dynamically...');
+  const swaggerJsdoc = require('swagger-jsdoc');
+
+  const swaggerOptions = {
+    definition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Simple School API',
+        version: '1.0.0',
+        description: 'API documentation for Simple School management system',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3002',
+          description: 'Development server',
+        },
+      ],
+    },
+    apis: ['./src/routes/*.js'], // Path to the API docs relative to root
+  };
+  swaggerSpec = swaggerJsdoc(swaggerOptions);
+}
+
 const swaggerUi = require('swagger-ui-express');
 
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Simple School API',
-      version: '1.0.0',
-      description: 'API documentation for Simple School management system',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3002',
-        description: 'Development server',
-      },
-    ],
-  },
-  apis: ['./src/routes/*.js'], // Path to the API docs
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
 // Serve Swagger at root
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
