@@ -63,5 +63,13 @@ const swaggerUi = require('swagger-ui-express');
 // Serve Swagger at root
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.listen(3002);
-console.log('Server running in: ' + process.env.URL_ORIGIN);
+// Export app for Vercel
+module.exports = app;
+
+// Only listen if executed directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 3002;
+  app.listen(PORT, () => {
+    console.log(`Server running in: ${process.env.URL_ORIGIN || `http://localhost:${PORT}`}`);
+  });
+}
